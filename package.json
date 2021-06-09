@@ -15,7 +15,8 @@
     "node.js",
     "inquirer",
     "chalk",
-    "materialize"
+    "materialize",
+    "jest"
   ],
   "author": "Jared Donovan",
   "license": "ISC",
