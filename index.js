@@ -77,13 +77,13 @@ const startQuestions = () => {
             }
         }
     ])
-    // .then(managerInput => {
-    //     const { name, id, email, officeNumber } = managerInput;
-    //     const managerInfo = new Manager(name, id, email, officeNumber);
+    .then(managerInput => {
+        const { name, id, email, officeNumber } = managerInput;
+        const managerInfo = new Manager(name, id, email, officeNumber);
 
-    //     teamArr.push(managerInfo);
-    //     console.log(green.dim(teamArr));
-    // })
+        teamArr.push(managerInfo);
+        console.log(green.dim(teamArr));
+    })
 };
 
 const addTeamMembers = function() {
@@ -154,7 +154,7 @@ const addTeamMembers = function() {
             type: 'input',
             name: 'school',
             message: redBlueBg.underline("Where does (did) the intern go to school?"),
-            when: (input) => input.getRole() === 'Intern',
+            when: (input) => input.role === 'Intern',
             validate: schoolVal => {
                 if (schoolVal) {
                     return true;
@@ -200,14 +200,7 @@ const writeHtml = (data) => {
 }
 
 startQuestions()
-    .then(function(input) {
-        const { name, id, email, officeNumber } = input;
-        const managerInfo = new Manager(name, id, email, officeNumber);
-
-        teamArr.push(managerInfo);
-        console.log(green.dim(teamArr));
-    })
-    .then(addTeamMembers())
+    .then(addTeamMembers)
     .then(function(teamArr) {
         return genHTML(teamArr);
     })
