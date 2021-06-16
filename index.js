@@ -17,7 +17,7 @@ const redBlueBg = chalk.red;
 const green = chalk.green;
 
 // Empty array to be filled with the team
-const teamArray = [];
+const teamArr = [];
 
 // Prompt starts
 const startQuestions = () => {
@@ -76,18 +76,19 @@ const startQuestions = () => {
                 }
             }
         }
-    ]).then(managerInput => {
-        const { name, id, email, officeNumber } = managerInput;
-        const managerInfo = new Manager(name, id, email, officeNumber);
+    ])
+    // .then(managerInput => {
+    //     const { name, id, email, officeNumber } = managerInput;
+    //     const managerInfo = new Manager(name, id, email, officeNumber);
 
-        teamArray.push(managerInfo);
-        console.log(green.dim(teamArray));
-    })
+    //     teamArr.push(managerInfo);
+    //     console.log(green.dim(teamArr));
+    // })
 };
 
-const addTeamMembers = () => {
+const addTeamMembers = function() {
     
-    console.log(teamArray);
+    console.log(teamArr);
     inquirer.prompt([
         {
             type: 'list',
@@ -180,12 +181,12 @@ const addTeamMembers = () => {
             console.log(green.dim(employee))
         }
 
-        teamArray.push(employee);
+        teamArr.push(employee);
 
         if (addAnotherEmployee) {
-            return addTeamMembers(teamArray);
+            return addTeamMembers(teamArr);
         } else {
-            return teamArray;
+            return teamArr;
         }
     })
 }
@@ -199,9 +200,18 @@ const writeHtml = (data) => {
 }
 
 startQuestions()
-    .then(addTeamMembers)
-    .then(function(teamArray) {
-        return genHTML(teamArray);
-    }).then(html => {
+    .then(function(input) {
+        const { name, id, email, officeNumber } = input;
+        const managerInfo = new Manager(name, id, email, officeNumber);
+
+        teamArr.push(managerInfo);
+        console.log(green.dim(teamArr));
+    })
+    .then(addTeamMembers())
+    .then(function(teamArr) {
+        return genHTML(teamArr);
+    })
+    .then(html => {
         return writeHtml(html);
-    }).catch(err => console.error(err));
+    })
+    .catch(err => console.error(err));
