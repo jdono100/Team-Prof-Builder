@@ -1,10 +1,10 @@
+// Import HTML generation file
+const genHTML = require('./src/genHTML');
+
 // Import roles
 const Manager = require('./lib/Manager');
 const Engineer = require('./lib/Engineer');
 const Intern = require('./lib/Intern');
-
-// Import HTML generation file
-const genHTML = require('./src/genHTML');
 
 // Import node packages
 const fs = require('fs');
@@ -13,18 +13,18 @@ const chalk = require('chalk');
 
 // Chalk shortcuts
 const blue = chalk.blue;
-const redBlueBg = chalk.red.bgBlue;
+const redBlueBg = chalk.red;
 const green = chalk.green;
 
 // Empty array to be filled with the team
-const teamArr = [];
+const teamArray = [];
 
 // Prompt starts
 const startQuestions = () => {
     return inquirer.prompt([
         {
             type: 'input',
-            name: 'managerName',
+            name: 'name',
             message: redBlueBg.underline('Who is the manager of this project?'),
             validate: nameVal => {
                 if (nameVal) {
@@ -37,7 +37,7 @@ const startQuestions = () => {
         },
         {
             type: 'input',
-            name: 'managerId',
+            name: 'id',
             message: redBlueBg.underline("What is the manager's ID number?"),
             validate: idVal => {
                 if (isNaN(idVal)) {
@@ -50,7 +50,7 @@ const startQuestions = () => {
         },
         {
             type: 'input',
-            name: 'managerEmail',
+            name: 'email',
             message: redBlueBg.underline("What is the manager's email?"),
             validate: emailVal => {
                 const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -77,25 +77,27 @@ const startQuestions = () => {
             }
         }
     ]).then(managerInput => {
-        const { managerName, managerId, managerEmail, officeNumber } = managerInput;
-        const managerInfo = new Manager(managerName, managerId, managerEmail, officeNumber);
+        const { name, id, email, officeNumber } = managerInput;
+        const managerInfo = new Manager(name, id, email, officeNumber);
 
-        console.log(green.dim(managerInfo))
-        teamArr.push(managerInfo);
+        teamArray.push(managerInfo);
+        console.log(green.dim(teamArray));
     })
 };
 
 const addTeamMembers = () => {
+    
+    console.log(teamArray);
     inquirer.prompt([
         {
             type: 'list',
             name: 'addMemberRole',
             message: redBlueBg.underline('Please select an employee.'),
-            choices: ['Add an engineer', 'Add an intern']
+            choices: ['Engineer', 'Intern']
         },
         {
             type: 'input',
-            name: 'employeeName',
+            name: 'name',
             message: redBlueBg.underline("What is the employee's name?"),
             validate: nameVal => {
                 if (nameVal) {
@@ -108,7 +110,7 @@ const addTeamMembers = () => {
         },
         {
             type: 'input',
-            name: 'employeeId',
+            name: 'id',
             message: redBlueBg.underline("What is the employee's ID number?"),
             validate: idVal => {
                 if (isNaN(idVal)) {
@@ -121,7 +123,7 @@ const addTeamMembers = () => {
         },
         {
             type: 'input',
-            name: 'employeeEmail',
+            name: 'email',
             message: redBlueBg.underline("What is the employee's email address?"),
             validate: emailVal => {
                 const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -136,9 +138,9 @@ const addTeamMembers = () => {
         },
         {
             type: 'input',
-            name: 'engineerGithub',
+            name: 'github',
             message: redBlueBg.underline("What is the engineer's Github profile name?"),
-            when: input => input.role === 'Engineer',
+            when: (input) => input.role === 'Engineer',
             validate: githubVal => {
                 if (githubVal) {
                     return true;
@@ -149,9 +151,9 @@ const addTeamMembers = () => {
         },
         {
             type: 'input',
-            name: 'internSchool',
+            name: 'school',
             message: redBlueBg.underline("Where does (did) the intern go to school?"),
-            when: input => input.role === 'Intern',
+            when: (input) => input.getRole() === 'Intern',
             validate: schoolVal => {
                 if (schoolVal) {
                     return true;
@@ -167,36 +169,39 @@ const addTeamMembers = () => {
             message: redBlueBg.underline('Would you like to add another employee?')
         }
     ]).then(function(data) {
-        let { employeeName, employeeId, employeeEmail, role, engineerGithub, internSchool, addAnotherEmployee } = data;
+        let { name, id, email, github, school, addAnotherEmployee } = data;
         let employee;
 
         if (role === 'Engineer') {
-            employee = new Engineer(employeeName, employeeId, employeeEmail, engineerGithub);
+            employee = new Engineer(name, id, email, github);
             console.log(green.dim(employee));
         } else if (role === 'Intern') {
-            employee = new Intern(employeeName, employeeId, employeeEmail, internSchool);
+            employee = new Intern(name, id, email, school);
             console.log(green.dim(employee))
         }
 
-        teamArr.push(employee);
+        teamArray.push(employee);
 
         if (addAnotherEmployee) {
-            return addTeamMembers(teamArr);
+            return addTeamMembers(teamArray);
         } else {
-            return teamArr;
+            return teamArray;
         }
     })
 }
 
 // Function to write html page
 const writeHtml = (data) => {
-    fs.writeFile('./dist/index.html', data, err => err ? console.error(err) : console.log(redBlueBg.underline('Successfully generated HTML in /dist!')));
+    fs.writeFile('./dist/index.html', data, err => {
+        if (err) throw err;
+        console.log("Team built successfully in /dist!");
+    })
 }
 
 startQuestions()
     .then(addTeamMembers)
-    .then(teamArr => {
-        return genHTML(teamArr);
+    .then(function(teamArray) {
+        return genHTML(teamArray);
     }).then(html => {
         return writeHtml(html);
     }).catch(err => console.error(err));
